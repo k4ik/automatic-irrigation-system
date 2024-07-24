@@ -3,17 +3,18 @@
 #include <LiquidCrystal.h>
 
 #define SENSOR_UMIDADE_SOLO_PINO A0
-#define RELE_IRRIGACAO_PINO 3 
+#define RELE_IRRIGACAO_PINO 3
 
-#define UMIDADE_SOLO_MINIMA 300
-#define UMIDADE_SOLO_MAXIMA 700
+LiquidCrystal lcd(12, 11, 5, 4, 7, 2);
 
-LiquidCrystal lcd(12, 11, 5, 4, 7, 2); 
+bool irrigar = false;
 
 void setup() {
-    Serial.begin(9600); 
+    Serial.begin(9600);
     pinMode(RELE_IRRIGACAO_PINO, OUTPUT);
-    digitalWrite(RELE_IRRIGACAO_PINO, LOW); 
+    pinMode(SENSOR_UMIDADE_SOLO_PINO, INPUT);
+    
+    digitalWrite(RELE_IRRIGACAO_PINO, HIGH);
     lcd.begin(16, 2);
     lcd.print("Iniciando...");
     delay(2000);
@@ -25,31 +26,22 @@ void loop() {
 }
 
 void controlarIrrigacao() {
-    int umidadeSolo = analogRead(SENSOR_UMIDADE_SOLO_PINO);
+    irrigar = digitalRead(SENSOR_UMIDADE_SOLO_PINO);
+    
     lcd.setCursor(0, 0);
-    lcd.print("Umidade: ");
-    lcd.print(umidadeSolo);
-    lcd.print("    "); 
-
-    Serial.print("Umidade do Solo: ");
-    Serial.println(umidadeSolo); 
-
-    if (umidadeSolo < UMIDADE_SOLO_MINIMA) {
-        digitalWrite(RELE_IRRIGACAO_PINO, HIGH);
+    if (irrigar) {
+        digitalWrite(RELE_IRRIGACAO_PINO, LOW); 
+        lcd.print("Umidade baixa ");
         lcd.setCursor(0, 1);
         lcd.print("Irrigando...   ");
-        Serial.println("Irrigando..."); 
-    } else if (umidadeSolo > UMIDADE_SOLO_MAXIMA) {
-        digitalWrite(RELE_IRRIGACAO_PINO, LOW);
+        Serial.println("Irrigando...");
+    } else {
+        digitalWrite(RELE_IRRIGACAO_PINO, HIGH); 
+        lcd.print("Umidade alta  ");
         lcd.setCursor(0, 1);
         lcd.print("Solo Ok       ");
-        Serial.println("Solo Ok"); 
-    } else {
-        digitalWrite(RELE_IRRIGACAO_PINO, LOW);
-        lcd.setCursor(0, 1);
-        lcd.print("Umidade Adeq. ");
-        Serial.println("Umidade Adequada"); 
+        Serial.println("Solo Ok");
     }
 
-    delay(2000);
+    delay(500); 
 }
